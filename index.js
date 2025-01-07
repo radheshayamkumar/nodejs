@@ -1,8 +1,11 @@
 // const http = require('http'); //cjs
 import http from 'http';  //es6
 import fs from 'fs'; //import file system module
+import { configDotenv } from 'dotenv';
 
-const PORT = 3000;
+configDotenv();
+
+const PORT = process.env.PORT || 3000;
 const server = http.createServer((req,res)=>{
     res.setHeader('Content-Type', 'text/html');
     // res.statusCode =200; //ok
