@@ -1,55 +1,50 @@
-// const http = require('http'); //cjs
-import http from 'http';  //es6
-import fs from 'fs'; //import file system module
+// Import necessary modules
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { configDotenv } from 'dotenv';
 
+// Configure environment variables
 configDotenv();
 
-const PORT = process.env.PORT || 3000;
-const server = http.createServer((req,res)=>{
-    res.setHeader('Content-Type', 'text/html');
-    // res.statusCode =200; //ok
-    // res.write('<h1>Hello World</h1>');
+// Manually define __dirname for ES6 modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-    if(req.url == '/homepage'){
-        res.statusCode = 200;
-        const data = fs.readFileSync('./index.html')
-        res.end(data);
-    }
-    else if(req.url == '/about'){
-        res.statusCode = 200;
-        const data = fs.readFileSync('./about.html')
-        res.end(data);
-    }
-    else if(req.url == '/admission'){
-        res.statusCode = 200;
-        const data = fs.readFileSync('./admission.html')
-        res.end(data);
-    }
-    else if(req.url == '/courses'){
-        res.statusCode = 200;
-        const data = fs.readFileSync('./courses.html')
-        res.end(data);
-    }
-    else if(req.url == '/contact'){
-        res.statusCode = 200;
-        const data = fs.readFileSync('./contact.html')
-        res.end(data);
-    }
-    else{
-        res.statusCode = 404;
-        res.end('<h1>Page Not Found at this Url</h1>');
-    }
-    
-})
-server.listen(PORT,()=>{
-    console.log(`server is runnig on port : ${PORT}`);
-})
+// Set the port
+const PORT = process.env.PORT || 8000;
 
-//import 
-// const greet = require('./first.js');
-// import {greet, company} from './first.js';
-// greet();
-// console.log(company);
-// console.log(company.name);
-// console.log(company.address);
+// Create the server
+const server = http.createServer((req, res) => {
+    const { url } = req;
+
+    // Default to homepage
+    let filePath = path.join(__dirname, 'public', 'index.html');
+
+    // Determine the file based on the request URL
+    if (url === '/about') filePath = path.join(__dirname, 'public', 'about.html');
+    else if (url === '/admission') filePath = path.join(__dirname, 'public', 'admission.html');
+    else if (url === '/contact') filePath = path.join(__dirname, 'public', 'contact.html');
+    else if (url === '/courses') filePath = path.join(__dirname, 'public', 'courses.html');
+
+    // Read and serve the file
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            // Handle file not found or other errors
+            res.statusCode = 404;
+            res.setHeader('Content-Type', 'text/html');
+            res.end('<h1>404 - File Not Found</h1>');
+        } else {
+            // Serve the requested file
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/html');
+            res.end(data);
+        }
+    });
+});
+
+// Start the server
+server.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
